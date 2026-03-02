@@ -1,17 +1,35 @@
-import { expect, Page } from "@playwright/test";
+import { expect, Page } from '@playwright/test';
+import { BasePage } from './BasePage';
 
-export default class LoginPage {
-  readonly page: Page;
+export class LoginPage extends BasePage {
+
+  private usernameInput = '#userName';
+  private passwordInput = '#password';
+  private loginButton = '#login';
+  private errorMessage = '#name';
 
   constructor(page: Page) {
-    this.page = page;
+    super(page);
   }
 
-  public async assertCurrentPage() {
-    await expect(this.page).toHaveURL("/login");
+  async goto() {
+    await this.navigate('/login');
   }
 
-  public async goto() {
-    await this.page.goto("/login");
+  async login(username: string, password: string) {
+    await this.page.fill(this.usernameInput, username);
+    await this.page.fill(this.passwordInput, password);
+    await this.page.click(this.loginButton);
+  }
+
+  async checkButtonColor(expectedColor: string) {
+    const color = await this.page.locator(this.loginButton).evaluate(
+      el => window.getComputedStyle(el).backgroundColor
+    );
+    expect(color).toBe(expectedColor);
+  }
+
+  async expectError() {
+    await expect(this.page.locator(this.errorMessage)).toBeVisible();
   }
 }
